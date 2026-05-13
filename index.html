@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E-Raport — SMP. International Tahfizh Quran Seruway</title><link rel="icon" href="<a href="https://ibb.co.com/NdtNn7TF"><img src="https://i.ibb.co.com/q37gFxJD/logo-smp.jpg" alt="logo-smp" border="0"></a>">
+<style>body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#0ea5e9,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff}.box{text-align:center;padding:30px}.logo{width:90px;height:90px;border-radius:50%;background:#fff;padding:8px;margin:0 auto 16px;object-fit:contain;box-shadow:0 10px 30px rgba(0,0,0,.2)}h1{margin:8px 0;font-size:20px}p{opacity:.9;margin:4px 0;font-size:14px}.spin{width:36px;height:36px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:r 1s linear infinite;margin:18px auto}@keyframes r{to{transform:rotate(360deg)}}.err{background:#fff;color:#b91c1c;border-radius:12px;padding:18px;margin-top:12px;text-align:left;font-size:13px;display:none;max-width:380px}</style>
+</head><body>
+<div class="box" id="boot">
+  <img src="<a href="https://ibb.co.com/NdtNn7TF"><img src="https://i.ibb.co.com/q37gFxJD/logo-smp.jpg" alt="logo-smp" border="0"></a>" class="logo" alt="logo" onerror="this.style.display='none'">
+  <h1>E-Raport SMP. International Tahfizh Quran Seruway</h1>
+  <p>NPSN: 70041515</p><div class="spin"></div><p>Memuat aplikasi...</p>
+  <div class="err" id="err"></div>
+</div>
+<script>
+/* ===== KONFIGURASI SEKOLAH (edit hanya bagian ini bila perlu) ===== */
+window.SEKOLAH_CONFIG = {
+  "kode": "smpitqu",
+  "nama": "SMP. International Tahfizh Quran Seruway",
+  "npsn": "70041515",
+  "alamat": "Dusun Suka Mulia, Desa Tangsi Lama, Seruway",
+  "kecamatan": "Seruway",
+  "kepalaSekolah": "Aswar Habibi, S.Pd., M.H., Gr.",
+  "nipKepsek": "-",
+  "motto": "Pendidikan adalah hal yang utama",
+  "logoUrl": "<a href=\"https://ibb.co.com/NdtNn7TF\"><img src=\"https://i.ibb.co.com/q37gFxJD/logo-smp.jpg\" alt=\"logo-smp\" border=\"0\"></a>",
+  "appsScriptUrl": "https://script.google.com/macros/s/AKfycbzCrkcJmjsUMEZ5fHaxc3MUNUJb2G82xLzryW8H9J1bzUrnQ9kOH54dFjscXcL8UGEM/exec",
+  "status": "aktif"
+};
+
+/* ===== LOADER (jangan diubah) ===== */
+const APP_URL = "https://raw.githubusercontent.com/sditquseruway/amal/main/eraport_v6.html";
+(async () => {
+  try {
+    if (window.SEKOLAH_CONFIG.status !== "aktif") throw new Error("Sekolah ini sedang non-aktif. Hubungi admin pusat.");
+    const res = await fetch(APP_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error("Gagal memuat aplikasi (HTTP " + res.status + ")");
+    const html = await res.text();
+    document.open(); document.write(html); document.close();
+  } catch (e) {
+    const b = document.getElementById('boot');
+    b.querySelector('.spin').style.display='none';
+    const err = document.getElementById('err');
+    err.style.display='block';
+    err.innerHTML = '<b>Gagal memuat:</b><br>' + e.message;
+  }
+})();
+</script>
+</body></html>
