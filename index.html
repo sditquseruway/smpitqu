@@ -2,17 +2,34 @@
 <!DOCTYPE html>
 <html lang="id"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>E-Raport — SMP. International Tahfizh Quran Seruway</title><link rel="icon" href="<a href="https://ibb.co.com/NdtNn7TF"><img src="https://i.ibb.co.com/q37gFxJD/logo-smp.jpg" alt="logo-smp" border="0"></a>">
-<style>body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#0ea5e9,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff}.box{text-align:center;padding:30px}.logo{width:90px;height:90px;border-radius:50%;background:#fff;padding:8px;margin:0 auto 16px;object-fit:contain;box-shadow:0 10px 30px rgba(0,0,0,.2)}h1{margin:8px 0;font-size:20px}p{opacity:.9;margin:4px 0;font-size:14px}.spin{width:36px;height:36px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:r 1s linear infinite;margin:18px auto}@keyframes r{to{transform:rotate(360deg)}}.err{background:#fff;color:#b91c1c;border-radius:12px;padding:18px;margin-top:12px;text-align:left;font-size:13px;display:none;max-width:380px}</style>
-</head><body>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>E-Raport — SMP. International Tahfizh Quran Seruway</title>
+<link rel="icon" href="https://i.ibb.co/q37gFxJD/logo-smp.jpg">
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#0ea5e9,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff}
+.box{text-align:center;padding:30px}
+.logo{width:90px;height:90px;border-radius:50%;background:#fff;padding:8px;margin:0 auto 16px;object-fit:contain;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+h1{margin:8px 0;font-size:20px} p{opacity:.9;margin:4px 0;font-size:14px}
+.spin{width:36px;height:36px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:r 1s linear infinite;margin:18px auto}
+@keyframes r{to{transform:rotate(360deg)}}
+.err{background:#fff;color:#b91c1c;border-radius:12px;padding:18px;margin-top:12px;text-align:left;font-size:13px;display:none;max-width:380px}
+</style></head><body>
 <div class="box" id="boot">
-  <img src="<a href="https://ibb.co.com/NdtNn7TF"><img src="https://i.ibb.co.com/q37gFxJD/logo-smp.jpg" alt="logo-smp" border="0"></a>" class="logo" alt="logo" onerror="this.style.display='none'">
+  <img src="https://i.ibb.co/q37gFxJD/logo-smp.jpg" class="logo" alt="logo" onerror="this.style.display='none'">
   <h1>E-Raport SMP. International Tahfizh Quran Seruway</h1>
-  <p>NPSN: 70041515</p><div class="spin"></div><p>Memuat aplikasi...</p>
+  <p>NPSN: 70041515</p>
+  <div class="spin"></div><p>Memuat aplikasi...</p>
   <div class="err" id="err"></div>
 </div>
 <script>
-/* ===== KONFIGURASI SEKOLAH (edit hanya bagian ini bila perlu) ===== */
+/* ========================================================================
+   KONFIGURASI SEKOLAH — edit hanya nilai-nilai di bawah ini.
+   PENTING: logoUrl WAJIB hanya URL gambar (.jpg/.png), JANGAN paste tag <img>!
+   Contoh BENAR : "https://i.ibb.co/xxx/logo.jpg"
+   Contoh SALAH : "<a href...><img src=...></a>"
+   ======================================================================== */
 window.SEKOLAH_CONFIG = {
   "kode": "smpitqu",
   "nama": "SMP. International Tahfizh Quran Seruway",
@@ -22,25 +39,68 @@ window.SEKOLAH_CONFIG = {
   "kepalaSekolah": "Aswar Habibi, S.Pd., M.H., Gr.",
   "nipKepsek": "-",
   "motto": "Pendidikan adalah hal yang utama",
-  "logoUrl": "<a href=\"https://ibb.co.com/NdtNn7TF\"><img src=\"https://i.ibb.co.com/q37gFxJD/logo-smp.jpg\" alt=\"logo-smp\" border=\"0\"></a>",
+  "logoUrl": "https://i.ibb.co/q37gFxJD/logo-smp.jpg",
   "appsScriptUrl": "https://script.google.com/macros/s/AKfycbzCrkcJmjsUMEZ5fHaxc3MUNUJb2G82xLzryW8H9J1bzUrnQ9kOH54dFjscXcL8UGEM/exec",
   "status": "aktif"
 };
 
-/* ===== LOADER (jangan diubah) ===== */
-const APP_URL = "https://raw.githubusercontent.com/sditquseruway/amal/main/eraport_v6.html";
+/* ========================================================================
+   LOADER MULTI-TENANT v2 — fix: stale cache + cross-school bleed
+   ======================================================================== */
 (async () => {
+  const SC = window.SEKOLAH_CONFIG;
+  const KODE = (SC.kode || SC.npsn || 'default').toString().toLowerCase().replace(/[^a-z0-9]/g,'');
+
+  // 1) BERSIHKAN service worker & cache milik sekolah lain di origin yg sama
   try {
-    if (window.SEKOLAH_CONFIG.status !== "aktif") throw new Error("Sekolah ini sedang non-aktif. Hubungi admin pusat.");
-    const res = await fetch(APP_URL + "?t=" + Date.now());
-    if (!res.ok) throw new Error("Gagal memuat aplikasi (HTTP " + res.status + ")");
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(_) {}
+
+  // 2) Jika last-school berbeda, hapus localStorage milik sekolah lain
+  try {
+    const last = localStorage.getItem('__eraport_last_school');
+    if (last && last !== KODE) {
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('eraaport_') || k.startsWith('activeTahunAjaran') ||
+            (k.includes('::') && !k.startsWith(KODE + '::'))) {
+          // hapus key sekolah lain (yang TIDAK diawali kode sekolah ini)
+          if (!k.startsWith(KODE + '::')) localStorage.removeItem(k);
+        }
+      });
+    }
+    localStorage.setItem('__eraport_last_school', KODE);
+  } catch(_) {}
+
+  // 3) Validasi status
+  try {
+    if (SC.status !== 'aktif') throw new Error('Sekolah ini sedang non-aktif. Hubungi admin pusat.');
+
+    // 4) Sanitize logoUrl di sisi loader (jaga-jaga kalau admin paste tag HTML)
+    if (SC.logoUrl && /<[^>]+>/.test(SC.logoUrl)) {
+      const m = SC.logoUrl.match(/src\s*=\s*["']([^"']+)["']/i);
+      if (m) SC.logoUrl = m[1];
+    }
+
+    // 5) Fetch HTML aplikasi (cache-bust ketat)
+    const APP_URL = 'https://raw.githubusercontent.com/sditquseruway/amal/main/eraport_v6.html';
+    const res = await fetch(APP_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Gagal memuat aplikasi (HTTP ' + res.status + ')');
     const html = await res.text();
+
+    // 6) Tulis ulang dokumen — SEKOLAH_CONFIG tetap di window (tidak terhapus document.open)
     document.open(); document.write(html); document.close();
   } catch (e) {
     const b = document.getElementById('boot');
-    b.querySelector('.spin').style.display='none';
+    b.querySelector('.spin').style.display = 'none';
     const err = document.getElementById('err');
-    err.style.display='block';
+    err.style.display = 'block';
     err.innerHTML = '<b>Gagal memuat:</b><br>' + e.message;
   }
 })();
