@@ -92,9 +92,18 @@ window.SEKOLAH_CONFIG = {
     const APP_URL = 'https://raw.githubusercontent.com/sditquseruway/amal/main/eraport_v6.html';
     const res = await fetch(APP_URL + '?t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Gagal memuat aplikasi (HTTP ' + res.status + ')');
-    const html = await res.text();
+    let html = await res.text();
 
-    // 6) Tulis ulang dokumen — SEKOLAH_CONFIG tetap di window (tidak terhapus document.open)
+    // 6) INJECT SEKOLAH_CONFIG sebagai inline-script ke dalam HTML aplikasi
+    //    supaya 100% terbaca walau document.open() membersihkan window di sebagian browser.
+    const inject = '<script>window.SEKOLAH_CONFIG=' + JSON.stringify(SC) + ';<\/script>';
+    if (/<head[^>]*>/i.test(html)) {
+      html = html.replace(/<head[^>]*>/i, m => m + inject);
+    } else {
+      html = inject + html;
+    }
+
+    // 7) Tulis ulang dokumen
     document.open(); document.write(html); document.close();
   } catch (e) {
     const b = document.getElementById('boot');
